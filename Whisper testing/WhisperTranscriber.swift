@@ -29,14 +29,16 @@ class WhisperTranscriber {
             }
             return nil
         }
-        
+
         do {
             print("Loading compiled models from:")
             print("Encoder: \(encoderURL.path)")
             print("Decoder: \(decoderURL.path)")
-            
-            self.encoder = try MLModel(contentsOf: encoderURL)
-            self.decoder = try MLModel(contentsOf: decoderURL)
+
+            let config = MLModelConfiguration()
+            config.computeUnits = .cpuAndNeuralEngine
+            self.encoder = try MLModel(contentsOf: encoderURL, configuration: config)
+            self.decoder = try MLModel(contentsOf: decoderURL, configuration: config)
             
             // Debug: Print model input/output feature names
             print("Encoder input features: \(encoder.modelDescription.inputDescriptionsByName.keys.sorted())")
@@ -92,8 +94,8 @@ class WhisperTranscriber {
     
     private func runInference(audioData: [Float]) -> String {
         do {
-            // Convert audio to log-mel spectrogram
-            let logMelData = convertToLogMelSpectrogram(audioData: audioData)
+            // Convert audio to log-mel spectrogram using Accelerate
+            let logMelData = AudioPreprocessor.logMelSpectrogram(audio: audioData)
             
             // Prepare input for encoder with correct feature name
             let inputShape = [1, 80, logMelData.count / 80] // [batch, n_mels, time_steps]
@@ -251,36 +253,4 @@ class WhisperTranscriber {
         return cleaned
     }
     
-    private func convertToLogMelSpectrogram(audioData: [Float]) -> [Float] {
-        // Simplified log-mel conversion for demo purposes
-        // In a real implementation, you would use proper FFT and mel-scale conversion
-        let melBands = 80
-        let timeSteps = min(3000, audioData.count / 160) // Whisper expects 3000 time steps max
-        
-        var logMelData = [Float]()
-        
-        for t in 0..<timeSteps {
-            for m in 0..<melBands {
-                // Simple approximation - in reality this would be proper mel-scale FFT
-                let startIdx = t * 160
-                let endIdx = min(startIdx + 160, audioData.count)
-                let segment = Array(audioData[startIdx..<endIdx])
-                
-                // Basic energy calculation with mel-scale approximation
-                let energy = segment.map { $0 * $0 }.reduce(0, +) / Float(segment.count)
-                let logEnergy = log(max(energy, 1e-10))
-                logMelData.append(logEnergy)
-            }
-        }
-        
-        // Pad or truncate to expected size
-        let expectedSize = melBands * 3000
-        if logMelData.count < expectedSize {
-            logMelData.append(contentsOf: Array(repeating: -11.5129, count: expectedSize - logMelData.count))
-        } else if logMelData.count > expectedSize {
-            logMelData = Array(logMelData.prefix(expectedSize))
-        }
-        
-        return logMelData
-    }
 }
