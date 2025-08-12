@@ -9,6 +9,7 @@ A real-time speech-to-text iOS app using Whisper Core ML models, built for iPhon
 - 📱 **iOS 18.5+ Support** optimized for iPhone 13 Pro Max
 - ⚡ **Real-time Transcription** with start/stop/clear controls
 - 🔧 **Complete Audio Pipeline** with preprocessing and format conversion
+- 🚀 **Accelerate Log-Mel Extraction** running on the Apple Neural Engine
 
 ## Architecture
 
@@ -24,7 +25,7 @@ A real-time speech-to-text iOS app using Whisper Core ML models, built for iPhon
 
 - **Encoder-Decoder Architecture**: Proper Whisper model integration with correct feature mapping
 - **Token Sequence Handling**: English transcription with proper prompt tokens
-- **Audio Processing**: Log-mel spectrogram conversion for Whisper input
+- **Audio Processing**: Accelerate-powered log-mel spectrograms for Whisper input
 - **Real-time Performance**: Optimized for live dictation with buffering
 
 ## Setup Instructions
